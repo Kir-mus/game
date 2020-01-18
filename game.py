@@ -674,6 +674,7 @@ def game():
             player.rect.left += s
             if pygame.sprite.spritecollideany(player, box_group):
                 player.rect.left -= s
+
         if mod == 'D':
             player.rect.top += s
             if pygame.sprite.spritecollideany(player, box_group):
