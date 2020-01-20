@@ -3,6 +3,7 @@ import pygame
 import sys
 from f import print_text
 from parameters import screen
+import time
 from parameters import screen_2
 from inventory import inventory
 from time import sleep
@@ -351,44 +352,58 @@ class Mob(pygame.sprite.Sprite):
         self.image = self.frames[self.cur_frame]
         self.rect = pygame.Rect(self.x, self.y, self.frames[self.cur_frame].get_width(),
                                 self.frames[self.cur_frame].get_height())
+        self.post_rect = self.rect
         self.cooldown_s = 0
         self.all_bullets = []
         self.width = 50
         self.heght = 50
 
     def update(self):
+
         if self.live:
-            if self.f:
-                if self.zel.rect.x - 80 < self.rect.x and self.zel.rect.x + 280 > self.rect.x and\
+            if self.zel.rect.x + 280 > self.rect.x and\
                         self.zel.rect.x - 280 < self.rect.x and\
                         self.zel.rect.y + 280 > self.rect.y and self.zel.rect.y - 280 < self.rect.y:
-                    self.speed_x = -2
+                self.sledovat = True
+            else:
+                self.sledovat = False
+            if self.sledovat:
+                if self.f:
+                    if self.zel.rect.x - 80 < self.rect.x and self.zel.rect.x + 280 > self.rect.x and\
+                            self.zel.rect.x - 280 < self.rect.x and\
+                            self.zel.rect.y + 280 > self.rect.y and self.zel.rect.y - 280 < self.rect.y:
+                        self.speed_x = -2
 
-                if self.zel.rect.x - 80 > self.rect.x and self.zel.rect.x + 280 > self.rect.x and\
-                        self.zel.rect.x - 280 < self.rect.x and\
-                        self.zel.rect.y + 280 > self.rect.y and self.zel.rect.y - 280 < self.rect.y:
-                    self.speed_x = 2
+                    if self.zel.rect.x - 80 > self.rect.x and self.zel.rect.x + 280 > self.rect.x and\
+                            self.zel.rect.x - 280 < self.rect.x and\
+                            self.zel.rect.y + 280 > self.rect.y and self.zel.rect.y - 280 < self.rect.y:
+                        self.speed_x = 2
 
-                if self.zel.rect.y > self.rect.y and self.zel.rect.x + 280 > self.rect.x and\
-                        self.zel.rect.x - 280 < self.rect.x and\
-                        self.zel.rect.y + 280 > self.rect.y and self.zel.rect.y - 280 < self.rect.y:
-                    self.speed_y = 2
+                    if self.zel.rect.y > self.rect.y and self.zel.rect.x + 280 > self.rect.x and\
+                            self.zel.rect.x - 280 < self.rect.x and\
+                            self.zel.rect.y + 280 > self.rect.y and self.zel.rect.y - 280 < self.rect.y:
+                        self.speed_y = 2
 
-                if self.zel.rect.y < self.rect.y and self.zel.rect.x + 280 > self.rect.x and\
-                        self.zel.rect.x - 280 < self.rect.x and\
-                        self.zel.rect.y + 280 > self.rect.y and self.zel.rect.y - 280 < self.rect.y:
-                    self.speed_y = -2
+                    if self.zel.rect.y < self.rect.y and self.zel.rect.x + 280 > self.rect.x and\
+                            self.zel.rect.x - 280 < self.rect.x and\
+                            self.zel.rect.y + 280 > self.rect.y and self.zel.rect.y - 280 < self.rect.y:
+                        self.speed_y = -2
 
-                self.move_to(self.speed_x, self.speed_y)
-                self.f = False
-            elif self.speed_x == -2 and not self.f:
-                self.move_to(0, 1)
-            elif self.speed_x == 2 and not self.f:
-                self.move_to(0, 1)
-            elif self.speed_y == 2 and not self.f:
-                self.move_to(0, -1)
-            elif self.speed_y == -2 and not self.f:
-                self.move_to(0, 1)
+
+                    self.move_to(self.speed_x, self.speed_y)
+                    self.f = False
+                elif self.speed_x == -2 and not self.f:
+                    self.move_to(1, 1)
+                elif self.speed_x == 2 and not self.f:
+                    self.move_to(0, 1)
+                elif self.speed_y == 2 and not self.f:
+                    self.move_to(0, -1)
+                elif self.speed_y == -2 and not self.f:
+                    self.move_to(0, 1)
+            else:
+                self.rect = self.post_rect
+
+
         else:
             print_text('dead', self.rect.x - 10, self.rect.y - 35, (255, 0, 0))
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
@@ -706,14 +721,15 @@ def pays():
 
 
 
-
 lvl = load_level('BETA')
 for i in lvl:
     print(i)
 
+timer = [0,0,0]
+
 
 def game():
-    global cooldown, sp_mob, lvl, paused
+    global cooldown, sp_mob, lvl, paused, timer
     player, level_x, level_y = generate_level(lvl)
     weapon = Weapon(load_image('bow.png'), 1, 1, player)
     weapon_sp = []
@@ -745,7 +761,7 @@ def game():
     up_mod = ''
     hold_left = True
     inventory.increase('sword')
-    inventory.increase('weapon_2')
+    inventory.increase('weapon_1')
     inventory.increase('bow')
     inventory.increase('shell')
 
@@ -753,8 +769,16 @@ def game():
     all_ms_bulets = []
     all_btn_bulets = []
     all_mob = []
-
+    CorrentTime = time.time()
     while run:
+        timers = time.time() - CorrentTime
+        print(timers, 'time')
+        if player.heath <= 0:
+            dead()
+
+
+
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -924,6 +948,7 @@ def game():
         mob_group.draw(screen)
         bullet_group.draw(screen)
         bullet_group_mob.draw(screen)
+        print(timer)
         inventory.draw_panel()
         if keys[pygame.K_LSHIFT]:
             player.stamin -= 1
@@ -985,8 +1010,11 @@ def game():
                 bullet_group.remove(bullet)
 
         button.draw(5, 110, 'quit', start_screen)
+        tm_sp = str(timers).split('.')
+        print_text('Time  ' + tm_sp[0] + ' :' + tm_sp[1][:2], 1007, 0, (200, 200, 50), 45)
         all_sprites.update()
         pygame.display.flip()
+
         clock.tick(60)
     pygame.quit()
 
@@ -1088,9 +1116,10 @@ def start_screen():
         print_text(text[i], 10, 70 * i, (75, 12 - i, 12 - i), 70)
     while True:
         botton.draw(50, 20, 'GAME', lvl_up, 50)
-        botton_quit.draw(50, 71, 'QUIT', terminate, 50)
+        botton_quit.draw(50, 71, 'EXIT', terminate, 50)
         pygame.event.get()
         pygame.display.flip()
 
 
 start_screen()
+

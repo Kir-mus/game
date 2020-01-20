@@ -15,7 +15,7 @@ class Inventory:
     def __init__(self):
         self.resources = {
             "sword": Resource('sword', r'data/sword.png'),
-            "weapon_2": Resource('weapon_2', r'data/weapon_2.png'),
+            "weapon_1": Resource('weapon_1', r'data/weapon_1.png'),
             "bow": Resource('bow', r'data/bow.png'),
             "shell": Resource('shell', r'data/shell.png'),
             "weapon_5": Resource('shell', r'data/shell.png')
