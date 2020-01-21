@@ -10,6 +10,9 @@ from time import sleep
 import random
 
 pygame.init()
+pygame.mixer.init()
+
+
 
 saze = WIDTH, HEIGHT = 1200, 700
 
@@ -62,7 +65,7 @@ def load_level(f):
     return list(map(lambda x: x.ljust(max_width, '.'), level_map))
 
 
-tile_images = {'wall': load_image('sten.png')[0], 'empty': load_image('pol.png')[0], 'grass': load_image('grass.png')[0]}
+tile_images = {'wall': load_image('sten.png')[0], 'empty': load_image('pol.png')[0], 'grass': load_image('grass_j.png')[0]}
 player_image1 = load_image('mar.png')[0]
 x = None
 y = None
@@ -372,22 +375,27 @@ class Mob(pygame.sprite.Sprite):
                     if self.zel.rect.x - 80 < self.rect.x and self.zel.rect.x + 280 > self.rect.x and\
                             self.zel.rect.x - 280 < self.rect.x and\
                             self.zel.rect.y + 280 > self.rect.y and self.zel.rect.y - 280 < self.rect.y:
+
                         self.speed_x = -2
 
                     if self.zel.rect.x - 80 > self.rect.x and self.zel.rect.x + 280 > self.rect.x and\
                             self.zel.rect.x - 280 < self.rect.x and\
                             self.zel.rect.y + 280 > self.rect.y and self.zel.rect.y - 280 < self.rect.y:
+
                         self.speed_x = 2
 
                     if self.zel.rect.y > self.rect.y and self.zel.rect.x + 280 > self.rect.x and\
                             self.zel.rect.x - 280 < self.rect.x and\
                             self.zel.rect.y + 280 > self.rect.y and self.zel.rect.y - 280 < self.rect.y:
+                        self.setSprite(load_image('hero_lic.png', -1)[0], 3, 1)
                         self.speed_y = 2
 
                     if self.zel.rect.y < self.rect.y and self.zel.rect.x + 280 > self.rect.x and\
                             self.zel.rect.x - 280 < self.rect.x and\
                             self.zel.rect.y + 280 > self.rect.y and self.zel.rect.y - 280 < self.rect.y:
+                        self.setSprite(load_image('hero_beak.png', -1)[0], 3, 1)
                         self.speed_y = -2
+
 
 
                     self.move_to(self.speed_x, self.speed_y)
@@ -659,22 +667,23 @@ class Bulletmob(pygame.sprite.Sprite):
         else:
             self.x -= self.speed_x
             self.y += self.speed_y
-        if self.x <= WIDTH and not reverse and not self.x >= self.weapon.rect.x + 200 and\
-                (self.y - 200 <= self.weapon.rect.y or self.y + 200 <= self.weapon.rect.y):
-            print('not_reverse')
-            self.rect = pygame.Rect(self.x, self.y, self.frames[self.cur_frame].get_width(),
-                                    self.frames[self.cur_frame].get_height())
+        if self.weapon.playre.sledovat:
+            if self.x <= WIDTH and not reverse and not self.x >= self.weapon.rect.x + 200 and\
+                    (self.y - 200 <= self.weapon.rect.y or self.y + 200 <= self.weapon.rect.y):
+                print('not_reverse')
+                self.rect = pygame.Rect(self.x, self.y, self.frames[self.cur_frame].get_width(),
+                                        self.frames[self.cur_frame].get_height())
 
-            self.f = True
-        elif self.x >= 0 and reverse and self.x >= self.weapon.rect.x - 200 and\
-                (self.y - 200 <= self.weapon.rect.y or self.y + 200 <= self.weapon.rect.y):
-            print('reverse')
-            self.rect = pygame.Rect(self.x, self.y, self.frames[self.cur_frame].get_width(),
-                                    self.frames[self.cur_frame].get_height())
-            self.f = True
+                self.f = True
+            elif self.x >= 0 and reverse and self.x >= self.weapon.rect.x - 200 and\
+                    (self.y - 200 <= self.weapon.rect.y or self.y + 200 <= self.weapon.rect.y):
+                print('reverse')
+                self.rect = pygame.Rect(self.x, self.y, self.frames[self.cur_frame].get_width(),
+                                        self.frames[self.cur_frame].get_height())
+                self.f = True
 
-        else:
-            self.f = False
+            else:
+                self.f = False
 
 
 paused = True
@@ -701,6 +710,18 @@ def dead():
                 terminate()
         bottn.draw(320, 150, 'DEAD', start_screen, 300)
         bottn.draw(320, 150, 'DEAD', terminate, 300)
+        pygame.display.flip()
+        clock.tick(15)
+
+
+def win():
+    bottn = Button(650, 500, (55, 55, 5), (155, 155, 50))
+    while paused:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+        bottn.draw(320, 150, 'WIN', start_screen, 500)
+        bottn.draw(320, 150, 'WIN', terminate, 500)
 
         pygame.display.flip()
         clock.tick(15)
@@ -722,21 +743,23 @@ def pays():
 
 
 lvl = load_level('BETA')
-for i in lvl:
-    print(i)
 
-timer = [0,0,0]
+
+timer = [0, 0, 0]
 
 
 def game():
-    global cooldown, sp_mob, lvl, paused, timer
+
+    global cooldown, sp_mob, lvl, paused, timer, sound
+
     player, level_x, level_y = generate_level(lvl)
     weapon = Weapon(load_image('bow.png'), 1, 1, player)
     weapon_sp = []
+    live_sp = []
 
     for mobs in sp_mob:
-        weapon_sp.append(Weapon(load_image('sword.png'), 1, 1, mobs))
-
+        weapon_sp.append(Weapon(load_image('bow.png'), 1, 1, mobs))
+        live_sp.append(False)
     s = 3
     s_mob = 1
     if level_x + level_y > 25:
@@ -745,7 +768,6 @@ def game():
         s = s + 2
     camera = Camera((level_x, level_y))
     # изменяем ракурс камеры
-
     mod = 'S'
     # обновляем положение всех спрайтов
     run = True
@@ -769,13 +791,20 @@ def game():
     all_ms_bulets = []
     all_btn_bulets = []
     all_mob = []
+    live = len(live_sp)
     CorrentTime = time.time()
-    while run:
-        timers = time.time() - CorrentTime
-        print(timers, 'time')
-        if player.heath <= 0:
-            dead()
 
+    pygame.mixer.music.load('data/muzlome_tartalo_musi.ogg')
+
+    pygame.mixer.music.play(-1)
+    pygame.mixer.music.set_volume(0.2)
+    while run:
+
+
+        timers = time.time() - CorrentTime
+        if player.heath <= 0:
+            pygame.mixer.music.stop()
+            dead()
 
 
 
@@ -853,11 +882,9 @@ def game():
         click = pygame.mouse.get_pressed()
 
         if click[2] and not hold_left:
-            print(mouse)
             inventory.set_start_cell(mouse[0], mouse[1])
             hold_left = True
         if hold_left and not click[2]:
-            print(pygame.mouse.get_pos())
             inventory.set_end_cell(mouse[0], mouse[1])
             hold_left = False
 
@@ -902,7 +929,6 @@ def game():
 
         for i in range(len(sp_mob)):
             if sp_mob[i].heath > 0:
-                print(sp_mob[i].heath)
                 if pygame.sprite.spritecollideany(sp_mob[i], bullet_group):
                     sp_mob[i].heath -= 25
                 if pygame.sprite.spritecollideany(sp_mob[i], box_group):
@@ -911,26 +937,30 @@ def game():
                 if pygame.sprite.spritecollideany(sp_mob[i], player_group):
                     sp_mob[i].f = False
 
-                if pygame.sprite.spritecollideany(sp_mob[i], player_group):
-                    sp_mob[i].f = False
 
                 if not pygame.sprite.spritecollideany(sp_mob[i], box_group):
                     sp_mob[i].f = True
 
                 if pygame.sprite.spritecollideany(player, bullet_group_mob) and not player.block:
-                    player.heath -= 10 // len(mob_group)
+                    player.heath -= 10
 
                 sp_mob[i].shoot(weapon_sp[i], player)
                 for bullet in bullet_group_mob:
                     if pygame.sprite.spritecollideany(bullet, player_group) or \
                             pygame.sprite.spritecollideany(bullet, box_group) or not bullet.f:
                         bullet_group_mob.remove(bullet)
+            elif sp_mob[i].heath <= 0 and not live_sp[i]:
+                live_sp[i] = True
+                if live_sp[i]:
+                    live -= 1
 
+                    if live == 0:
+
+                        win()
         click = pygame.mouse.get_pressed()
         mouse = pygame.mouse.get_pos()
         if not cooldown:
             if click[0]:
-                print(10)
                 player.shoot(weapon, mouse[0], mouse[1])
                 cooldown = 30
         else:
@@ -948,7 +978,6 @@ def game():
         mob_group.draw(screen)
         bullet_group.draw(screen)
         bullet_group_mob.draw(screen)
-        print(timer)
         inventory.draw_panel()
         if keys[pygame.K_LSHIFT]:
             player.stamin -= 1
@@ -964,35 +993,30 @@ def game():
             inventory.draw_whole()
 
         if keys[pygame.K_1]:
-            print(1)
             try:
                 weapon.setSprite(load_image(inventory.inventory_panel[0].name + '.png'), 1, 1)
             except AttributeError:
                 pass
 
         if keys[pygame.K_2]:
-            print(2)
             try:
                 weapon.setSprite(load_image(inventory.inventory_panel[1].name + '.png'), 1, 1)
             except AttributeError:
                 pass
 
         if keys[pygame.K_3]:
-            print(3)
             try:
                 weapon.setSprite(load_image(inventory.inventory_panel[2].name + '.png'), 1, 1)
             except AttributeError:
                 pass
 
         if keys[pygame.K_4]:
-            print(4)
             try:
                 weapon.setSprite(load_image(inventory.inventory_panel[3].name + '.png'), 1, 1)
             except AttributeError:
                 pass
 
         if keys[pygame.K_5]:
-            print(5)
             try:
                 weapon.setSprite(load_image(inventory.inventory_panel[4].name + '.png'), 1, 1)
             except AttributeError:
@@ -1015,14 +1039,14 @@ def game():
         all_sprites.update()
         pygame.display.flip()
 
-        clock.tick(60)
+        clock.tick(80)
     pygame.quit()
 
 
 def lvl_1():
-    global lvl, cooldown, sp_mob, lvl, paused, mod, run, left, reath, isjampcaunt, jamp, sp_mob, s, player, level_x, level_y, \
-        tiles_group, player_group, all_sprites, box_group, weapon_group, bullet_group, bullet_group_mob, mob_group, hellca_group, \
-        mob_cord
+    global lvl, cooldown, sp_mob, lvl, paused, mod, run, left,reath,isjampcaunt,jamp, sp_mob, s, player, level_x,level_y, \
+        tiles_group, player_group, all_sprites, box_group, weapon_group, bullet_group, bullet_group_mob, mob_group,hellca_group,\
+    mob_cord
     player, level_x, level_y = None, None, None
     weapon = None
     weapon_sp = []
@@ -1040,6 +1064,7 @@ def lvl_1():
     cooldown = 0
     mob_cord = []
     s = 5
+
 
     # изменяем ракурс камеры
 
@@ -1089,6 +1114,7 @@ def lvl_2():
     lvl = load_level('BETA_2')
     game()
 
+
 def lvl_up():
     fon = pygame.transform.scale(load_image('fon.png')[0], (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
@@ -1107,14 +1133,16 @@ def lvl_up():
 
 
 def start_screen():
+
     fon = pygame.transform.scale(load_image('fon.png')[0], (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
     text = 'DARKCASTLE'
-    botton = Button(100, 50)
-    botton_quit = Button(100, 50)
+
     for i in range(len(text)):
         print_text(text[i], 10, 70 * i, (75, 12 - i, 12 - i), 70)
     while True:
+        botton = Button(100, 50)
+        botton_quit = Button(100, 50)
         botton.draw(50, 20, 'GAME', lvl_up, 50)
         botton_quit.draw(50, 71, 'EXIT', terminate, 50)
         pygame.event.get()
