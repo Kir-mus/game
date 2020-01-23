@@ -355,14 +355,13 @@ class Mob(pygame.sprite.Sprite):
         self.image = self.frames[self.cur_frame]
         self.rect = pygame.Rect(self.x, self.y, self.frames[self.cur_frame].get_width(),
                                 self.frames[self.cur_frame].get_height())
-        self.post_rect = self.rect
+
         self.cooldown_s = 0
         self.all_bullets = []
         self.width = 50
         self.heght = 50
 
     def update(self):
-
         if self.live:
             if self.zel.rect.x + 280 > self.rect.x and\
                         self.zel.rect.x - 280 < self.rect.x and\
@@ -372,44 +371,34 @@ class Mob(pygame.sprite.Sprite):
                 self.sledovat = False
             if self.sledovat:
                 if self.f:
-                    if self.zel.rect.x - 80 < self.rect.x and self.zel.rect.x + 280 > self.rect.x and\
-                            self.zel.rect.x - 280 < self.rect.x and\
-                            self.zel.rect.y + 280 > self.rect.y and self.zel.rect.y - 280 < self.rect.y:
+                    print(self.zel.rect.x - 80, self.rect.x)
+
+
+                    if self.zel.rect.x - 80 < self.rect.x:
 
                         self.speed_x = -2
 
-                    if self.zel.rect.x - 80 > self.rect.x and self.zel.rect.x + 280 > self.rect.x and\
-                            self.zel.rect.x - 280 < self.rect.x and\
-                            self.zel.rect.y + 280 > self.rect.y and self.zel.rect.y - 280 < self.rect.y:
+                    if self.zel.rect.x - 80 > self.rect.x:
 
                         self.speed_x = 2
 
-                    if self.zel.rect.y > self.rect.y and self.zel.rect.x + 280 > self.rect.x and\
-                            self.zel.rect.x - 280 < self.rect.x and\
-                            self.zel.rect.y + 280 > self.rect.y and self.zel.rect.y - 280 < self.rect.y:
+                    if self.zel.rect.y > self.rect.y:
                         self.setSprite(load_image('hero_lic.png', -1)[0], 3, 1)
                         self.speed_y = 2
 
-                    if self.zel.rect.y < self.rect.y and self.zel.rect.x + 280 > self.rect.x and\
-                            self.zel.rect.x - 280 < self.rect.x and\
-                            self.zel.rect.y + 280 > self.rect.y and self.zel.rect.y - 280 < self.rect.y:
+                    if self.zel.rect.y < self.rect.y:
                         self.setSprite(load_image('hero_beak.png', -1)[0], 3, 1)
                         self.speed_y = -2
-
+                    if self.zel.rect.x - 80 == self.rect.x + 1 or self.zel.rect.x - 80 == self.rect.x - 1:
+                        self.setSprite(load_image('hero_proz.png', -1)[0], 2, 1)
 
 
                     self.move_to(self.speed_x, self.speed_y)
                     self.f = False
-                elif self.speed_x == -2 and not self.f:
-                    self.move_to(1, 1)
-                elif self.speed_x == 2 and not self.f:
-                    self.move_to(0, 1)
-                elif self.speed_y == 2 and not self.f:
-                    self.move_to(0, -1)
-                elif self.speed_y == -2 and not self.f:
-                    self.move_to(0, 1)
+                else:
+                    self.move_to(-self.speed_x, -self.speed_y)
             else:
-                self.rect = self.post_rect
+                self.setSprite(load_image('hero_proz.png', -1)[0], 2, 1)
 
 
         else:
@@ -427,7 +416,6 @@ class Mob(pygame.sprite.Sprite):
 
     def move_to(self, speed_x, speed_y):
         self.rect.move_ip(speed_x, speed_y)
-
 
     def setSprite(self, sprite, columns, rows):
         self.sheet = sprite
