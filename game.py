@@ -2,20 +2,14 @@ import os
 import pygame
 import sys
 from f import print_text
-from parameters import screen
+from parameters import screen, display_width, display_height
 import time
-from parameters import screen_2
 from inventory import inventory
-from time import sleep
-import random
+
 
 pygame.init()
 pygame.mixer.init()
-
-
-
-saze = WIDTH, HEIGHT = 1200, 700
-
+saze = WIDTH, HEIGHT = display_width, display_height
 clock = pygame.time.Clock()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
@@ -86,16 +80,14 @@ def generate_level(level):
                 Tile('grass', x, y)
             elif level[y][x] == '+':
                 Tile('empty', x, y)
-                new_hellca = Hellca(load_image("hellca_2.png", -1)[0], 1, 1, x * 50, y * 50)
+                Hellca(load_image("hellca_2.png", -1)[0], 1, 1, x * 50, y * 50)
             elif level[y][x] == '!':
                 Tile('empty', x, y)
                 sp_mob.append(Mob(load_image("hero_proz.png", -1)[0], 2, 1, x * 50, y * 50, 2, 2, new_player))
             elif level[y][x] == '@':
                 Tile('empty', x, y)
                 new_player = Player(load_image("hero_proz.png", -1)[0], 2, 1, x * 50, y * 50)
-
     # вернем игрока, а также размер поля в клетках
-
     return new_player, x, y
 
 
@@ -132,7 +124,7 @@ class Weapon(pygame.sprite.Sprite):
         self.playre = playre
         self.frames = []
         self.left = False
-        self.cut_sheet(self.sheet, self.columns, self.rows)
+        self.cut_sheet()
         self.cur_frame = 0
         # self.image = pygame.transform.scale(self.frames[self.cur_frame], (40, 40))
         self.image = self.frames[self.cur_frame]
@@ -154,13 +146,12 @@ class Weapon(pygame.sprite.Sprite):
         if self.weapon_name == 'bow':
             self.w = 35
             self.h = 35
-
         self.columns = columns
         self.rows = rows
         self.frames = []
-        self.cut_sheet(self.sheet, self.columns, self.rows)
+        self.cut_sheet()
 
-    def cut_sheet(self, sheet, columns, rows):
+    def cut_sheet(self):
         self.test_rect = pygame.Rect(0, 0, self.sheet.get_width() // self.columns,
                                      self.sheet.get_height() // self.rows)
         for j in range(self.rows):
@@ -180,33 +171,31 @@ class Weapon(pygame.sprite.Sprite):
             self.playre.block = False
         if self.playre.heath <= 0:
             self.live = False
-
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
-        # self.image = pygame.transform.scale(self.frames[self.cur_frame], (40, 40))
         self.image = self.frames[self.cur_frame]
         if not self.left:
             if self.weapon_name != 'shell':
                 self.rect = pygame.Rect(self.playre.rect.x + 25, self.playre.rect.y,
-                                            self.frames[self.cur_frame].get_width(),
-                                            self.frames[self.cur_frame].get_height())
+                                        self.frames[self.cur_frame].get_width(),
+                                        self.frames[self.cur_frame].get_height())
             else:
                 self.rect = pygame.Rect(self.playre.rect.x + 25, self.playre.rect.y + 6,
-                                            self.frames[self.cur_frame].get_width(),
-                                            self.frames[self.cur_frame].get_height())
+                                        self.frames[self.cur_frame].get_width(),
+                                        self.frames[self.cur_frame].get_height())
         else:
             if self.weapon_name != 'shell':
                 self.rect = pygame.Rect(self.playre.rect.x - 25, self.playre.rect.y,
-                                            self.frames[self.cur_frame].get_width(),
-                                            self.frames[self.cur_frame].get_height())
+                                        self.frames[self.cur_frame].get_width(),
+                                        self.frames[self.cur_frame].get_height())
             else:
                 self.rect = pygame.Rect(self.playre.rect.x - 15, self.playre.rect.y,
-                                            self.frames[self.cur_frame].get_width(),
-                                            self.frames[self.cur_frame].get_height())
+                                        self.frames[self.cur_frame].get_width(),
+                                        self.frames[self.cur_frame].get_height())
 
         if self.trans:
             self.sheet = pygame.transform.flip(self.sheet, 1, 0)
             self.frames = []
-            self.cut_sheet(self.sheet, self.columns, self.rows)
+            self.cut_sheet()
             self.trans = False
 
 
@@ -219,14 +208,13 @@ class Hellca(pygame.sprite.Sprite):
         self.x = x
         self.y = y
         self.frames = []
-        self.cut_sheet(self.sheet, self.columns, self.rows)
+        self.cut_sheet()
         self.cur_frame = 0
-        # self.image = pygame.transform.scale(self.frames[self.cur_frame], (40, 40))
         self.image = self.frames[self.cur_frame]
         self.rect = pygame.Rect(self.x + 15, self.y + 15, self.frames[self.cur_frame].get_width(),
                                 self.frames[self.cur_frame].get_height())
 
-    def cut_sheet(self, sheet, columns, rows):
+    def cut_sheet(self):
         self.test_rect = pygame.Rect(0, 0,  self.sheet.get_width() // self.columns,
                                      self.sheet.get_height() // self.rows)
         for j in range(self.rows):
@@ -237,7 +225,6 @@ class Hellca(pygame.sprite.Sprite):
 
     def update(self):
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
-        # self.image = pygame.transform.scale(self.frames[self.cur_frame], (40, 40))
         self.image = self.frames[self.cur_frame]
 
 
@@ -255,9 +242,8 @@ class Player(pygame.sprite.Sprite):
         self.y = y
         self.all_bullets = []
         self.frames = []
-        self.cut_sheet(self.sheet, self.columns, self.rows)
+        self.cut_sheet()
         self.cur_frame = 0
-        # self.image = pygame.transform.scale(self.frames[self.cur_frame], (40, 40))
         self.image = self.frames[self.cur_frame]
         self.rect = pygame.Rect(self.x, self.y, self.frames[self.cur_frame].get_width(),
                                 self.frames[self.cur_frame].get_height())
@@ -267,9 +253,9 @@ class Player(pygame.sprite.Sprite):
         self.columns = columns
         self.rows = rows
         self.frames = []
-        self.cut_sheet(self.sheet, self.columns, self.rows)
+        self.cut_sheet()
 
-    def cut_sheet(self, sheet, columns, rows):
+    def cut_sheet(self):
         self.test_rect = pygame.Rect(0, 0,  self.sheet.get_width() // self.columns,
                                      self.sheet.get_height() // self.rows)
         for j in range(self.rows):
@@ -280,7 +266,6 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
-        # self.image = pygame.transform.scale(self.frames[self.cur_frame], (40, 40))
         self.image = self.frames[self.cur_frame]
         pygame.draw.rect(screen, (75, 3, 1), (5, 5, 100 * 4, 30))
         pygame.draw.rect(screen, (200, 23, 1), (5, 5, 100 * 4, 30), 3)
@@ -294,7 +279,6 @@ class Player(pygame.sprite.Sprite):
             self.stamin = 100
         if self.stamin < 0:
             self.stamin = 0
-
         if self.heath >= 0:
             pygame.draw.rect(screen, (144, 23, 1), (5, 7, self.heath * 4, 30 - 4))
         else:
@@ -349,13 +333,11 @@ class Mob(pygame.sprite.Sprite):
         self.x_w = 1
         self.y = y
         self.frames = []
-        self.cut_sheet(self.sheet, self.columns, self.rows)
+        self.cut_sheet()
         self.cur_frame = 0
-        # self.image = pygame.transform.scale(self.frames[self.cur_frame], (40, 40))
         self.image = self.frames[self.cur_frame]
         self.rect = pygame.Rect(self.x, self.y, self.frames[self.cur_frame].get_width(),
                                 self.frames[self.cur_frame].get_height())
-
         self.cooldown_s = 0
         self.all_bullets = []
         self.width = 50
@@ -371,45 +353,31 @@ class Mob(pygame.sprite.Sprite):
                 self.sledovat = False
             if self.sledovat:
                 if self.f:
-                    print(self.zel.rect.x - 80, self.rect.x)
-
-
                     if self.zel.rect.x - 80 < self.rect.x:
-
                         self.speed_x = -2
-
                     if self.zel.rect.x - 80 > self.rect.x:
-
                         self.speed_x = 2
-
                     if self.zel.rect.y > self.rect.y:
                         self.setSprite(load_image('hero_lic.png', -1)[0], 3, 1)
                         self.speed_y = 2
-
                     if self.zel.rect.y < self.rect.y:
                         self.setSprite(load_image('hero_beak.png', -1)[0], 3, 1)
                         self.speed_y = -2
                     if self.zel.rect.x - 80 == self.rect.x + 1 or self.zel.rect.x - 80 == self.rect.x - 1:
                         self.setSprite(load_image('hero_proz.png', -1)[0], 2, 1)
-
-
                     self.move_to(self.speed_x, self.speed_y)
                     self.f = False
                 else:
                     self.move_to(-self.speed_x, -self.speed_y)
             else:
                 self.setSprite(load_image('hero_proz.png', -1)[0], 2, 1)
-
-
         else:
             print_text('dead', self.rect.x - 10, self.rect.y - 35, (255, 0, 0))
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         self.image = self.frames[self.cur_frame]
         if self.heath > 0:
             pygame.draw.rect(screen, (144, 23, 1), (self.rect.x - 10, self.rect.y - 5, self.heath // 2, 5))
-
         pygame.draw.rect(screen, (144, 23, 1), (self.rect.x - 10, self.rect.y - 5, 50, 5), 1)
-
         if self.heath <= 0:
             self.setSprite(load_image('kill.png', -1)[0], 1, 1)
             self.live = False
@@ -422,9 +390,9 @@ class Mob(pygame.sprite.Sprite):
         self.columns = columns
         self.rows = rows
         self.frames = []
-        self.cut_sheet(self.sheet, self.columns, self.rows)
+        self.cut_sheet()
 
-    def cut_sheet(self, sheet, columns, rows):
+    def cut_sheet(self):
         self.test_rect = pygame.Rect(5, 5,  self.sheet.get_width() // self.columns,
                                      self.sheet.get_height() // self.rows)
         for j in range(self.rows):
@@ -432,11 +400,6 @@ class Mob(pygame.sprite.Sprite):
                 frame_location = (self.test_rect.w * i, self.test_rect.h * j)
                 self.frames.append(pygame.transform.scale(self.sheet.subsurface(pygame.Rect(
                     frame_location, self.test_rect.size)), (35, 35)))
-
-    def chek_dmg(self, bullet):
-        if self.x <= bullet.x <= self.x + self.width:
-            if self.y <= bullet.y <= self.y + self.heght:
-                self.kil = True
 
     def shoot(self, weapon, zel):
         if self.live:
@@ -511,14 +474,13 @@ class Bullet(pygame.sprite.Sprite):
         self.f = False
         self.dest_y = 0
         self.frames = []
-        self.cut_sheet(self.sheet, self.columns, self.rows)
+        self.cut_sheet()
         self.cur_frame = 0
-        # self.image = pygame.transform.scale(self.frames[self.cur_frame], (40, 40))
         self.image = self.frames[self.cur_frame]
         self.rect = pygame.Rect(self.x, self.y, self.frames[self.cur_frame].get_width(),
                                 self.frames[self.cur_frame].get_height())
 
-    def cut_sheet(self, sheet, columns, rows):
+    def cut_sheet(self):
         self.test_rect = pygame.Rect(0, 0,  self.sheet.get_width() // self.columns,
                                      self.sheet.get_height() // self.rows)
         for j in range(self.rows):
@@ -532,7 +494,7 @@ class Bullet(pygame.sprite.Sprite):
         if self.x <= WIDTH:
             print(self.x, self.y)
             self.rect = self.rect = pygame.Rect(self.x, self.y, self.frames[self.cur_frame].get_width(),
-                                self.frames[self.cur_frame].get_height())
+                                                self.frames[self.cur_frame].get_height())
             return True
         else:
             return False
@@ -547,7 +509,6 @@ class Bullet(pygame.sprite.Sprite):
         self.dest_y = dest_y
         delta_x = self.dest_x - self.x
         count_up = delta_x // self.speed_x
-
         if count_up != 0:
             if self.y >= self.dest_y:
                 delta_y = self.y - self.dest_y
@@ -570,7 +531,6 @@ class Bullet(pygame.sprite.Sprite):
         if self.x <= WIDTH and not reverse:
             self.rect = pygame.Rect(self.x, self.y, self.frames[self.cur_frame].get_width(),
                                     self.frames[self.cur_frame].get_height())
-
             self.f = True
         elif self.x >= 0 and reverse:
             self.rect = pygame.Rect(self.x, self.y, self.frames[self.cur_frame].get_width(),
@@ -598,14 +558,13 @@ class Bulletmob(pygame.sprite.Sprite):
         self.f = False
         self.dest_y = 0
         self.frames = []
-        self.cut_sheet(self.sheet, self.columns, self.rows)
+        self.cut_sheet()
         self.cur_frame = 0
-        # self.image = pygame.transform.scale(self.frames[self.cur_frame], (40, 40))
         self.image = self.frames[self.cur_frame]
         self.rect = pygame.Rect(self.x, self.y, self.frames[self.cur_frame].get_width(),
                                 self.frames[self.cur_frame].get_height())
 
-    def cut_sheet(self, sheet, columns, rows):
+    def cut_sheet(self):
         self.test_rect = pygame.Rect(0, 0,  self.sheet.get_width() // self.columns,
                                      self.sheet.get_height() // self.rows)
         for j in range(self.rows):
@@ -619,7 +578,7 @@ class Bulletmob(pygame.sprite.Sprite):
         if self.x <= WIDTH:
             print(self.x, self.y)
             self.rect = self.rect = pygame.Rect(self.x, self.y, self.frames[self.cur_frame].get_width(),
-                                self.frames[self.cur_frame].get_height())
+                                                self.frames[self.cur_frame].get_height())
             return True
         else:
             return False
@@ -632,10 +591,8 @@ class Bulletmob(pygame.sprite.Sprite):
     def find_path(self, dest_x, dest_y):
         self.dest_x = dest_x
         self.dest_y = dest_y
-
         delta_x = dest_x - self.x
         count_up = delta_x // self.speed_x
-
         if count_up != 0:
             if self.y >= dest_y:
                 delta_y = self.y - dest_y
@@ -661,7 +618,6 @@ class Bulletmob(pygame.sprite.Sprite):
                 print('not_reverse')
                 self.rect = pygame.Rect(self.x, self.y, self.frames[self.cur_frame].get_width(),
                                         self.frames[self.cur_frame].get_height())
-
                 self.f = True
             elif self.x >= 0 and reverse and self.x >= self.weapon.rect.x - 200 and\
                     (self.y - 200 <= self.weapon.rect.y or self.y + 200 <= self.weapon.rect.y):
@@ -674,24 +630,9 @@ class Bulletmob(pygame.sprite.Sprite):
                 self.f = False
 
 
-paused = True
-deadd = True
-
-
-def set_p():
-    global paused
-    paused = False
-
-
-def set_d():
-    global dead
-    dead = False
-
-
 def dead():
-    global dead
     bottn = Button(650, 500)
-    bottn_2 = Button(650, 500)
+    paused = True
     while paused:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -704,6 +645,7 @@ def dead():
 
 def win():
     bottn = Button(650, 500, (55, 55, 5), (155, 155, 50))
+    paused = True
     while paused:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -715,41 +657,41 @@ def win():
         clock.tick(15)
 
 
+paused = True
+
+
+def set_p():
+    global paused
+    paused = False
+
+
 def pays():
+    global paused
     bottn = Button(350, 100)
     while paused:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
         bottn.draw(120, 200, 'RETURN', set_p)
-
         print_text('PAUSED', 210, 200, (75, 1, 1), 100)
-
         pygame.display.flip()
         clock.tick(15)
 
 
-
 lvl = load_level('BETA')
-
-
 timer = [0, 0, 0]
 
 
 def game():
-
     global cooldown, sp_mob, lvl, paused, timer, sound
-
     player, level_x, level_y = generate_level(lvl)
     weapon = Weapon(load_image('bow.png'), 1, 1, player)
     weapon_sp = []
     live_sp = []
-
     for mobs in sp_mob:
         weapon_sp.append(Weapon(load_image('bow.png'), 1, 1, mobs))
         live_sp.append(False)
     s = 3
-    s_mob = 1
     if level_x + level_y > 25:
         s = s + 1
     if level_x + level_y > 45:
@@ -759,8 +701,6 @@ def game():
     mod = 'S'
     # обновляем положение всех спрайтов
     run = True
-    left = False
-    reath = False
     isjampcaunt = 5
     jamp = False
     went_r = load_image('hero_r.png', -1)[0]
@@ -768,87 +708,49 @@ def game():
     went_l = load_image('hero_l.png', -1)[0]
     went_beak = load_image('hero_beak.png', -1)[0]
     went_lic = load_image('hero_lic.png', -1)[0]
-    up_mod = ''
     hold_left = True
     inventory.increase('sword')
     inventory.increase('weapon_1')
     inventory.increase('bow')
     inventory.increase('shell')
-
     button = Button(100, 30)
-    all_ms_bulets = []
     all_btn_bulets = []
-    all_mob = []
     live = len(live_sp)
     CorrentTime = time.time()
-
     pygame.mixer.music.load('data/muzlome_tartalo_musi.ogg')
-
     pygame.mixer.music.play(-1)
     pygame.mixer.music.set_volume(0.2)
     while run:
-
-
         timers = time.time() - CorrentTime
         if player.heath <= 0:
             pygame.mixer.music.stop()
             dead()
-
-
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-
             key = pygame.key.get_pressed()
-
             if key[pygame.K_DOWN]:
                 player.setSprite(went_lic, 3, 1)
-                if mod == 'L':
-                    up_mod = 'DL'
-                if mod == 'R':
-                    up_mod = 'DR'
-                else:
-                    mod = 'D'
-
+                mod = 'D'
             if key[pygame.K_UP]:
                 player.setSprite(went_beak, 3, 1)
                 weapon.left = True
                 weapon.trans = True
-                if mod == 'L':
-                    up_mod = 'UL'
-                if mod == 'R':
-                    up_mod = 'UR'
-                else:
-                    mod = 'U'
-
+                mod = 'U'
             if key[pygame.K_RIGHT]:
                 player.setSprite(went_r, 3, 1)
-                if mod == 'U':
-                    up_mod = 'RU'
-                if mod == 'D':
-                    up_mod = 'RD'
-                else:
-                    mod = 'R'
-
+                mod = 'R'
             if key[pygame.K_LEFT]:
                 player.setSprite(went_l, 3, 1)
                 weapon.left = True
                 weapon.trans = True
-                if mod == 'U':
-                    up_mod = 'LU'
-                if mod == 'D':
-                    up_mod = 'LD'
-                else:
-                     mod = 'L'
-
+                mod = 'L'
             if key[pygame.K_ESCAPE]:
                 mod = 'S'
                 paused = True
                 weapon.left = False
                 player.setSprite(stend, 2, 1)
                 pays()
-
             if event.type == pygame.KEYUP:
                 if event.key == 274 or event.key == 275 or event.key == 276 or event.key == 273:
                     mod = 'S'
@@ -864,18 +766,15 @@ def game():
                     weapon.trans = True
                     weapon.left = False
                     player.setSprite(stend, 2, 1)
-
         keys = pygame.key.get_pressed()
         mouse = pygame.mouse.get_pos()
         click = pygame.mouse.get_pressed()
-
         if click[2] and not hold_left:
             inventory.set_start_cell(mouse[0], mouse[1])
             hold_left = True
         if hold_left and not click[2]:
             inventory.set_end_cell(mouse[0], mouse[1])
             hold_left = False
-
         if not jamp:
             if keys[pygame.K_SPACE]:
                 weapon.trans = False
@@ -891,10 +790,8 @@ def game():
             else:
                 jamp = False
                 isjampcaunt = 5
-        s_m = 10
         if player.heath <= 0:
             dead()
-
         if mod == 'S':
             pass
         if mod == 'L':
@@ -905,7 +802,6 @@ def game():
             player.rect.left += s
             if pygame.sprite.spritecollideany(player, box_group):
                 player.rect.left -= s
-
         if mod == 'D':
             player.rect.top += s
             if pygame.sprite.spritecollideany(player, box_group):
@@ -914,24 +810,18 @@ def game():
             player.rect.top -= s
             if pygame.sprite.spritecollideany(player, box_group):
                 player.rect.top += s
-
         for i in range(len(sp_mob)):
             if sp_mob[i].heath > 0:
                 if pygame.sprite.spritecollideany(sp_mob[i], bullet_group):
                     sp_mob[i].heath -= 25
                 if pygame.sprite.spritecollideany(sp_mob[i], box_group):
                     sp_mob[i].f = False
-
                 if pygame.sprite.spritecollideany(sp_mob[i], player_group):
                     sp_mob[i].f = False
-
-
                 if not pygame.sprite.spritecollideany(sp_mob[i], box_group):
                     sp_mob[i].f = True
-
                 if pygame.sprite.spritecollideany(player, bullet_group_mob) and not player.block:
                     player.heath -= 10
-
                 sp_mob[i].shoot(weapon_sp[i], player)
                 for bullet in bullet_group_mob:
                     if pygame.sprite.spritecollideany(bullet, player_group) or \
@@ -941,9 +831,7 @@ def game():
                 live_sp[i] = True
                 if live_sp[i]:
                     live -= 1
-
                     if live == 0:
-
                         win()
         click = pygame.mouse.get_pressed()
         mouse = pygame.mouse.get_pos()
@@ -976,34 +864,28 @@ def game():
         else:
             s = 5
             player.stamin += 0.4
-
         if keys[pygame.K_TAB]:
             inventory.draw_whole()
-
         if keys[pygame.K_1]:
             try:
                 weapon.setSprite(load_image(inventory.inventory_panel[0].name + '.png'), 1, 1)
             except AttributeError:
                 pass
-
         if keys[pygame.K_2]:
             try:
                 weapon.setSprite(load_image(inventory.inventory_panel[1].name + '.png'), 1, 1)
             except AttributeError:
                 pass
-
         if keys[pygame.K_3]:
             try:
                 weapon.setSprite(load_image(inventory.inventory_panel[2].name + '.png'), 1, 1)
             except AttributeError:
                 pass
-
         if keys[pygame.K_4]:
             try:
                 weapon.setSprite(load_image(inventory.inventory_panel[3].name + '.png'), 1, 1)
             except AttributeError:
                 pass
-
         if keys[pygame.K_5]:
             try:
                 weapon.setSprite(load_image(inventory.inventory_panel[4].name + '.png'), 1, 1)
@@ -1020,26 +902,21 @@ def game():
             if pygame.sprite.spritecollideany(bullet, mob_group) or\
                     pygame.sprite.spritecollideany(bullet, box_group) or not bullet.f:
                 bullet_group.remove(bullet)
-
         button.draw(5, 110, 'quit', start_screen)
         tm_sp = str(timers).split('.')
         print_text('Time  ' + tm_sp[0] + ' :' + tm_sp[1][:2], 1007, 0, (200, 200, 50), 45)
         all_sprites.update()
         pygame.display.flip()
-
         clock.tick(80)
     pygame.quit()
 
 
 def lvl_1():
-    global lvl, cooldown, sp_mob, lvl, paused, mod, run, left,reath,isjampcaunt,jamp, sp_mob, s, player, level_x,level_y, \
-        tiles_group, player_group, all_sprites, box_group, weapon_group, bullet_group, bullet_group_mob, mob_group,hellca_group,\
-    mob_cord
+    global lvl, cooldown, sp_mob, lvl, paused, mod, run, left, reath, isjampcaunt, jamp, sp_mob, s, player, level_x,\
+        level_y, tiles_group, player_group, all_sprites, box_group, weapon_group, bullet_group, bullet_group_mob,\
+        mob_group, hellca_group, mob_cord
     player, level_x, level_y = None, None, None
-    weapon = None
-    weapon_sp = []
     sp_mob = []
-
     tiles_group = pygame.sprite.Group()
     player_group = pygame.sprite.Group()
     all_sprites = pygame.sprite.Group()
@@ -1052,12 +929,7 @@ def lvl_1():
     cooldown = 0
     mob_cord = []
     s = 5
-
-
-    # изменяем ракурс камеры
-
     mod = 'S'
-    # обновляем положение всех спрайтов
     run = True
     left = False
     reath = False
@@ -1068,14 +940,11 @@ def lvl_1():
 
 
 def lvl_2():
-    global lvl, cooldown, sp_mob, lvl, paused, mod, run, left,reath,isjampcaunt,jamp, sp_mob, s, player, level_x,level_y, \
-        tiles_group, player_group, all_sprites, box_group, weapon_group, bullet_group, bullet_group_mob, mob_group,hellca_group,\
-    mob_cord
+    global lvl, cooldown, sp_mob, lvl, paused, mod, run, left, reath, isjampcaunt, jamp, sp_mob, s, player,\
+        level_x, level_y, tiles_group, player_group, all_sprites, box_group, weapon_group, bullet_group,\
+        bullet_group_mob, mob_group, hellca_group,  mob_cord
     player, level_x, level_y = None, None, None
-    weapon = None
-    weapon_sp = []
     sp_mob = []
-
     tiles_group = pygame.sprite.Group()
     player_group = pygame.sprite.Group()
     all_sprites = pygame.sprite.Group()
@@ -1088,12 +957,7 @@ def lvl_2():
     cooldown = 0
     mob_cord = []
     s = 5
-
-
-    # изменяем ракурс камеры
-
     mod = 'S'
-    # обновляем положение всех спрайтов
     run = True
     left = False
     reath = False
@@ -1121,11 +985,9 @@ def lvl_up():
 
 
 def start_screen():
-
     fon = pygame.transform.scale(load_image('fon.png')[0], (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
     text = 'DARKCASTLE'
-
     for i in range(len(text)):
         print_text(text[i], 10, 70 * i, (75, 12 - i, 12 - i), 70)
     while True:
@@ -1138,4 +1000,3 @@ def start_screen():
 
 
 start_screen()
-
